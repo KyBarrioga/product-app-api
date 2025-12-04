@@ -1,0 +1,2 @@
+# Development requirements - for personal development and testing
+flake8>=3.9.2,<4.0
