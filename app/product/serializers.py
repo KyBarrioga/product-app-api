@@ -21,11 +21,14 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get(
+            'description', instance.description)
         instance.price = validated_data.get('price', instance.price)
         instance.save()
         return instance
 
+
 class ProductDetailSerializer(ProductSerializer):
     class Meta(ProductSerializer.Meta):
-        fields = ProductSerializer.Meta.fields + ['user']  # Include user field for detailed view
+        # Include user field for detailed view
+        fields = ProductSerializer.Meta.fields + ['user']

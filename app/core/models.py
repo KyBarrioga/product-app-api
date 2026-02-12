@@ -66,6 +66,7 @@ class Product(models.Model):
     @classmethod
     def create(cls, name, price, user, description=''):
         """Create and return a new product attached to a user."""
-        product = cls(name=name, price=price, user=user, description=description)
+        product = cls(name=name, price=price, user=user,
+                      description=description)
         product.save()
         return product

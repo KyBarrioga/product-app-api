@@ -8,10 +8,11 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from core.models import Product
 
-from product.serializers import ProductSerializer, ProductDetailSerializer
+from product.serializers import ProductSerializer
 
 CREATE_PRODUCT_URL = reverse('product:product-create')
 LIST_PRODUCT_URL = reverse('product:product-list')
+
 
 def create_user(**params):
     """Helper function to create a new user"""
@@ -89,7 +90,8 @@ class PrivateProductAPITestCase(TestCase):
     #     """Test creating a new product"""
     #     self.client.force_authenticate(user=self.user)
     #     product = create_product(user=self.user)
-    #     print(f'Created product: {product.price, product.name, product.description, product.user, product.id}')
+    #     print(f'Created product: {product.price, product.name,
+    #       product.description, product.user, product.id}')
 
     # def test_list_products(self):
     #     """Test listing all products"""
@@ -107,7 +109,8 @@ class PrivateProductAPITestCase(TestCase):
     #     product = Product.objects.create(**self.product_data)
     #     self.client.force_authenticate(user=self.user)
     #     updated_data = {**self.product_data, 'price': 39.99}
-    #     response = self.client.put(f'/api/products/{product.id}/', updated_data, format='json')
+    #     response = self.client.put(f'/api/products/{product.id}/',
+    #                  updated_data, format='json')
     #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # def test_delete_product(self):
