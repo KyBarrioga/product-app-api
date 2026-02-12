@@ -2,9 +2,13 @@
 Tests for core models.
 """
 
+from decimal import Decimal
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-
+from django.core import serializers
+from core import models
+import json
 
 class ModelsTests(TestCase):
     """Test for models"""
@@ -60,3 +64,22 @@ class ModelsTests(TestCase):
             password='superpass123'
         )
         self.assertTrue(user.is_superuser)
+
+    def test_create_product(self):
+        """Test creating a product is successful"""
+        user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        product = models.Product.objects.create(
+            user=user,
+            name='Sample Product',
+            price=Decimal('10.00'),
+            description='Sample description'
+        )
+        self.assertEqual(product.name, 'Sample Product')
+        self.assertEqual(product.price, Decimal('10.00'))
+        self.assertEqual(product.description, 'Sample description')
+        self.assertEqual(product.user, user)
+        print('Created product !!!', serializers.serialize('json', [product]))

@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -46,3 +47,25 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['email']
+
+
+class Product(models.Model):
+    """Product model."""
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, default='')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='products',
+    )
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def create(cls, name, price, user, description=''):
+        """Create and return a new product attached to a user."""
+        product = cls(name=name, price=price, user=user, description=description)
+        product.save()
+        return product
