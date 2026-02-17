@@ -13,5 +13,6 @@ urlpatterns = [
     #     'create/', ProductViewSet.as_view({'post': 'create'}),
     #     name='product-create'),
     # path(
-    #     'list/', ProductViewSet.as_view({'get': 'list'}), name='product-list'),
+    #     'list/', ProductViewSet.as_view({'get': 'list'}),
+    # name='product-list'),
 ]

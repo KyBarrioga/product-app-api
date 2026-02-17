@@ -14,6 +14,7 @@ from product.serializers import (ProductSerializer, ProductDetailSerializer)
 # LIST_PRODUCT_URL = reverse('product:product-list')
 PRODUCT_URL = reverse('product:product-list')
 
+
 def detail_url(product_id):
     """Return product detail URL"""
     return reverse('product:product-detail', args=[product_id])
