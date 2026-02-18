@@ -59,6 +59,7 @@ class Product(models.Model):
         on_delete=models.CASCADE,
         related_name='products',
     )
+    tags = models.ManyToManyField('Tag')
 
     def __str__(self):
         return self.name
@@ -70,3 +71,16 @@ class Product(models.Model):
                       description=description)
         product.save()
         return product
+
+
+class Tag(models.Model):
+    """Tag model."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tags',
+    )
+
+    def __str__(self):
+        return self.name

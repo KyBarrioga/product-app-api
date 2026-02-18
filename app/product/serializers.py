@@ -4,7 +4,7 @@
 
 
 from rest_framework import serializers
-from core.models import Product
+from core.models import Product, Tag
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -48,3 +48,11 @@ class ProductDetailSerializer(ProductSerializer):
         fields = ProductSerializer.Meta.fields + ['description']
         read_only_fields = ProductSerializer.Meta.read_only_fields + \
             ['id', 'user']
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = ['id', 'name']
+        read_only_fields = ['id']

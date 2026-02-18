@@ -6,8 +6,12 @@ from decimal import Decimal
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.core import serializers
 from core import models
+
+
+def create_user(**params):
+    """Helper function to create a new user"""
+    return get_user_model().objects.create_user(**params)
 
 
 class ModelsTests(TestCase):
@@ -82,4 +86,17 @@ class ModelsTests(TestCase):
         self.assertEqual(product.price, Decimal('10.00'))
         self.assertEqual(product.description, 'Sample description')
         self.assertEqual(product.user, user)
-        print('Created product !!!', serializers.serialize('json', [product]))
+
+    def test_create_tag(self):
+        """Test creating a tag is successful"""
+        user = create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        tag = models.Tag.objects.create(
+            user=user,
+            name='Test Tag'
+        )
+        self.assertEqual(tag.name, 'Test Tag')
+        self.assertEqual(tag.user, user)
