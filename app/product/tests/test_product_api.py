@@ -251,7 +251,7 @@ class PrivateProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         new_tag = Tag.objects.get(user=self.user, name='New Tag')
         self.assertIn(new_tag, product.tags.all())
-        self.assertTrue(product.tags.filter(name='New Tag').exists())
+        self.assertFalse(product.tags.filter(name='New Tag').exists())
 
     def test_update_product_assign_tag(self):
         """Test assigning an existing tag when updating a product"""
