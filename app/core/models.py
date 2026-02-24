@@ -60,6 +60,7 @@ class Product(models.Model):
         related_name='products',
     )
     tags = models.ManyToManyField('Tag')
+    ingredients = models.ManyToManyField('Ingredients')
 
     def __str__(self):
         return self.name
@@ -80,6 +81,19 @@ class Tag(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='tags',
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredients(models.Model):
+    """Ingredients model."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ingredients',
     )
 
     def __str__(self):
