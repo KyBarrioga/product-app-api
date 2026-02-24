@@ -19,6 +19,13 @@ def create_user(**params):
     return get_user_model().objects.create_user(**params)
 
 
+def detail_url(tag_id):
+    """
+    Return ingredient detail URL.
+    """
+    return reverse('product:ingredients-detail', args=[tag_id])
+
+
 class PublicIngredientsAPITests(TestCase):
     """
     Test case for the Ingredients API endpoint.
@@ -31,7 +38,7 @@ class PublicIngredientsAPITests(TestCase):
         """
         Test that authentication is required to access the ingredients API.
         """
-        response = self.client.get(reverse(INGREDIENTS_URL))
+        response = self.client.get(INGREDIENTS_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -77,3 +84,25 @@ class PrivateIngredientsAPITests(TestCase):
         serializer = IngredientsSerializer(ingredients, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_update_ingredient(self):
+        """Test updating an ingredient."""
+        ingredient = Ingredients.objects.create(user=self.user, name='Ingredient 5')
+
+        payload = {'name': 'Updated Ingredient'}
+        url = detail_url(ingredient.id)
+        response = self.client.patch(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ingredient.refresh_from_db()
+        self.assertEqual(ingredient.name, payload['name'])
+
+    def test_delete_ingredient(self):
+        """Test deleting an ingredient."""
+        ingredient = Ingredients.objects.create(user=self.user, name='Ingredient 6')
+
+        url = detail_url(ingredient.id)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Ingredients.objects.filter(id=ingredient.id).exists())

@@ -6,9 +6,10 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Product, Tag
+from core.models import Ingredients, Product, Tag
 from .serializers import (ProductSerializer,
-                          ProductDetailSerializer, TagSerializer)
+                          ProductDetailSerializer, TagSerializer,
+                          IngredientsSerializer)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -48,4 +49,22 @@ class TagViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
     def perform_create(self, serializer):
         """Create a new tag"""
+        serializer.save(user=self.request.user)
+
+
+class IngredientsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
+                         mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                         mixins.DestroyModelMixin):
+    """View to manage Ingredients APIs"""
+    serializer_class = IngredientsSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Ingredients.objects.all()
+
+    def get_queryset(self):
+        """Retrieve ingredients for authenticated user"""
+        return self.queryset.filter(user=self.request.user).order_by('-id')
+
+    def perform_create(self, serializer):
+        """Create a new ingredient"""
         serializer.save(user=self.request.user)
