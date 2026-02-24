@@ -86,6 +86,7 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+
 class Ingredients(models.Model):
     """Ingredients model."""
     name = models.CharField(max_length=255)

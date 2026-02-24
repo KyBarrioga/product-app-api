@@ -12,6 +12,7 @@ from product.serializers import IngredientsSerializer
 
 INGREDIENTS_URL = reverse('product:ingredients-list')
 
+
 def create_user(**params):
     """
     Helper function to create a user.
@@ -80,14 +81,16 @@ class PrivateIngredientsAPITests(TestCase):
 
         response = self.client.get(INGREDIENTS_URL)
 
-        ingredients = Ingredients.objects.filter(user=self.user).order_by('-name')
+        ingredients = Ingredients.objects.filter(
+            user=self.user).order_by('-name')
         serializer = IngredientsSerializer(ingredients, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
     def test_update_ingredient(self):
         """Test updating an ingredient."""
-        ingredient = Ingredients.objects.create(user=self.user, name='Ingredient 5')
+        ingredient = Ingredients.objects.create(
+            user=self.user, name='Ingredient 5')
 
         payload = {'name': 'Updated Ingredient'}
         url = detail_url(ingredient.id)
@@ -99,7 +102,8 @@ class PrivateIngredientsAPITests(TestCase):
 
     def test_delete_ingredient(self):
         """Test deleting an ingredient."""
-        ingredient = Ingredients.objects.create(user=self.user, name='Ingredient 6')
+        ingredient = Ingredients.objects.create(
+            user=self.user, name='Ingredient 6')
 
         url = detail_url(ingredient.id)
         response = self.client.delete(url)
