@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from rest_framework.test import APIClient
 from rest_framework import status
-from core.models import Product, Tag
+from core.models import Product, Tag, Ingredients
 
 from product.serializers import (ProductSerializer, ProductDetailSerializer)
 
@@ -283,3 +283,104 @@ class PrivateProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(product.tags.count(), 0)
         self.assertFalse(product.tags.filter(name='Tag to Clear').exists())
+
+    def test_create_product_with_new_ingredients(self):
+        """Test creating a product with new ingredients"""
+        payload = {
+            'name': 'Pasta',
+            'description': 'Delicious pasta with tomato sauce.',
+            'price': Decimal('12.99'),
+            'ingredients': [{'name': 'Pasta'}, {'name': 'Tomato Sauce'}],
+        }
+        response = self.client.post(PRODUCT_URL, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.filter(user=self.user)
+        self.assertEqual(product.count(), 1)
+        product = Product.objects.get(user=self.user)
+        self.assertEqual(product.ingredients.count(), 2)
+
+        for ingredient in payload['ingredients']:
+            self.assertTrue(
+                product.ingredients.filter(name=ingredient['name']).exists()
+            )
+
+    def test_create_product_with_existing_ingredients(self):
+        """Test creating a product with existing ingredients"""
+        Ingredients.objects.create(user=self.user, name='Cabbage')
+        payload = {
+            'name': 'Soup',
+            'description': 'Delicious soup with vegetables.',
+            'price': Decimal('8.99'),
+            'ingredients': [{'name': 'Cabbage'}, {'name': 'Vegetables'}],
+        }
+        response = self.client.post(PRODUCT_URL, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.filter(user=self.user)
+        self.assertEqual(product.count(), 1)
+        product = Product.objects.get(user=self.user)
+        self.assertEqual(product.ingredients.count(), 2)
+
+        for ingredient in payload['ingredients']:
+            self.assertTrue(
+                product.ingredients.filter(name=ingredient['name']).exists()
+            )
+
+    def test_create_ingredient_on_update_product(self):
+        """Test creating an ingredient when updating a product"""
+        product = create_product(user=self.user)
+        url = detail_url(product.id)
+        payload = {
+            'name': 'Updated Product',
+            'ingredients': [{'name': 'New Ingredient'}],
+        }
+        response = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        product = Product.objects.get(id=product.id)  # Refresh product from DB
+        self.assertEqual(product.name, 'Updated Product')  # Check name update
+
+        new_ingredient = Ingredients.objects.get(
+            user=self.user, name='New Ingredient')
+        self.assertIn(new_ingredient, product.ingredients.all())
+        self.assertTrue(
+            product.ingredients.filter(name='New Ingredient').exists()
+        )
+
+    def test_update_product_assign_ingredient(self):
+        """Test assigning an existing ingredient when updating a product"""
+        product = create_product(user=self.user)
+        first_ingredient = Ingredients.objects.create(
+            user=self.user, name='First Ingredient')
+        product.ingredients.add(first_ingredient)
+        url = detail_url(product.id)
+        second_ingredient = Ingredients.objects.create(
+            user=self.user, name='Second Ingredient')
+        payload = {
+            'ingredients': [{'name': 'Second Ingredient'}],
+        }
+        response = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(second_ingredient, product.ingredients.all())
+        self.assertNotIn(first_ingredient, product.ingredients.all())
+
+    def test_clear_product_ingredients(self):
+        """Test clearing a product's ingredients"""
+        product = create_product(user=self.user)
+        ingredient = Ingredients.objects.create(
+            user=self.user, name='Ingredient to Clear')
+        product.ingredients.add(ingredient)
+        url = detail_url(product.id)
+        payload = {
+            'ingredients': [],
+        }
+        response = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(product.ingredients.count(), 0)
+        self.assertFalse(
+            product.ingredients.filter(name='Ingredient to Clear').exists()
+        )
