@@ -12,6 +12,23 @@ from .serializers import (ProductSerializer,
                           IngredientsSerializer)
 
 
+class ProductAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
+                         mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                         mixins.DestroyModelMixin):
+    """Base viewset for user owned product attributes"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Retrieve ingredients for authenticated user"""
+        return self.queryset.filter(user=self.request.user).order_by('-id')
+
+    # Note: We do not need perform_create
+    # def perform_create(self, serializer):
+    #     """Create a new ingredient"""
+    #     serializer.save(user=self.request.user)
+
+
 class ProductViewSet(viewsets.ModelViewSet):
     """View to manage Product APIs"""
     serializer_class = ProductSerializer
@@ -34,37 +51,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         return self.serializer_class
 
 
-class TagViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
-                 mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                 mixins.DestroyModelMixin):
+class TagViewSet(ProductAttrViewSet):
     """View to manage Tag APIs"""
     serializer_class = TagSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
     queryset = Tag.objects.all()
 
-    def get_queryset(self):
-        """Retrieve tags for authenticated user"""
-        return self.queryset.filter(user=self.request.user).order_by('-id')
 
-    def perform_create(self, serializer):
-        """Create a new tag"""
-        serializer.save(user=self.request.user)
-
-
-class IngredientsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
-                         mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                         mixins.DestroyModelMixin):
+class IngredientsViewSet(ProductAttrViewSet):
     """View to manage Ingredients APIs"""
     serializer_class = IngredientsSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
     queryset = Ingredients.objects.all()
-
-    def get_queryset(self):
-        """Retrieve ingredients for authenticated user"""
-        return self.queryset.filter(user=self.request.user).order_by('-id')
-
-    def perform_create(self, serializer):
-        """Create a new ingredient"""
-        serializer.save(user=self.request.user)

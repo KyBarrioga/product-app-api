@@ -25,10 +25,12 @@ class TagSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, required=False)
+    ingredients = IngredientsSerializer(many=True, required=False)
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'user', 'price', 'tags']
+        fields = ['id', 'name', 'description',
+                  'user', 'price', 'tags', 'ingredients']
         read_only_fields = ['id', 'user']
 
     def validate(self, attrs):
@@ -42,8 +44,16 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a new product."""
         tags = validated_data.pop('tags', [])
+        ingredients = validated_data.pop('ingredients', [])
         product = Product.objects.create(**validated_data)
         user = self.context['request'].user
+
+        for ingredient in ingredients:
+            ingredient_obj, created = Ingredients.objects.get_or_create(
+                user=user,
+                **ingredient
+            )
+            product.ingredients.add(ingredient_obj)
 
         for tag in tags:
             tag_obj, created = Tag.objects.get_or_create(
@@ -71,6 +81,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
         # Update tags similar to create logic
         tags = validated_data.pop('tags', None)
+        ingredients = validated_data.pop('ingredients', None)
         if tags is not None:
             auth_user = self.context['request'].user
             instance.tags.clear()
@@ -78,6 +89,14 @@ class ProductSerializer(serializers.ModelSerializer):
                 tag_obj, created = Tag.objects.get_or_create(
                     user=auth_user, **tag)
                 instance.tags.add(tag_obj)
+
+        if ingredients is not None:
+            auth_user = self.context['request'].user
+            instance.ingredients.clear()
+            for ingredient in ingredients:
+                ingredient_obj, created = Ingredients.objects.get_or_create(
+                    user=auth_user, **ingredient)
+                instance.ingredients.add(ingredient_obj)
 
         return instance
 
