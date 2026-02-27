@@ -48,7 +48,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Return appropriate serializer class"""
-        if self.action == 'list':
+        if self.action in ['list', 'retrieve']:
             return ProductDetailSerializer
         if self.action == 'upload_image':
             return ProductImageSerializer
