@@ -1,12 +1,24 @@
 """
 Database models.
 """
+import uuid
+import os
+
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
+from django.conf import settings
+
+
+def product_image_file_path(instance, filename):
+    """Generate file path for new product image."""
+    fileextension = filename.split('.')[-1]  # Get the file extension
+    filename = f'{uuid.uuid4()}.{fileextension}'
+
+    return os.path.join('uploads', 'product', filename)
 
 
 class UserManager(BaseUserManager):
@@ -46,3 +58,55 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['email']
+
+
+class Product(models.Model):
+    """Product model."""
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, default='')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='products',
+    )
+    tags = models.ManyToManyField('Tag')
+    ingredients = models.ManyToManyField('Ingredients')
+    image = models.ImageField(null=True, upload_to=product_image_file_path)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def create(cls, name, price, user, description=''):
+        """Create and return a new product attached to a user."""
+        product = cls(name=name, price=price, user=user,
+                      description=description)
+        product.save()
+        return product
+
+
+class Tag(models.Model):
+    """Tag model."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tags',
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredients(models.Model):
+    """Ingredients model."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ingredients',
+    )
+
+    def __str__(self):
+        return self.name
