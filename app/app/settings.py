@@ -148,3 +148,10 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Product API',
+    'DESCRIPTION': 'API for managing products, ingredients and tags.',
+    'VERSION': '1.0.0',
+    'COMPONENT_SPLIT_REQUEST': True
+}

@@ -8,6 +8,11 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from core.models import Product, Tag, Ingredients
 
+import tempfile
+import os
+from PIL import Image
+# from unittest.mock import patch
+
 from product.serializers import (ProductSerializer, ProductDetailSerializer)
 
 # CREATE_PRODUCT_URL = reverse('product:product-create')
@@ -18,6 +23,11 @@ PRODUCT_URL = reverse('product:product-list')
 def detail_url(product_id):
     """Return product detail URL"""
     return reverse('product:product-detail', args=[product_id])
+
+
+def image_upload_url(product_id):
+    """Return URL for product image upload"""
+    return reverse('product:product-upload-image', args=[product_id])
 
 
 def create_user(**params):
@@ -384,3 +394,49 @@ class PrivateProductAPITestCase(TestCase):
         self.assertFalse(
             product.ingredients.filter(name='Ingredient to Clear').exists()
         )
+
+
+class ProductImageUploadTests(TestCase):
+    """Test cases for uploading product images"""
+
+    def setUp(self):
+        """Set up test client and sample data"""
+        self.client = APIClient()
+        self.user = create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='testpass123'
+        )
+        self.client.force_authenticate(user=self.user)
+        self.product = create_product(user=self.user)
+
+    def tearDown(self):
+        """Clean up any created files after tests"""
+        self.product.refresh_from_db()
+        if self.product.image:
+            if os.path.exists(self.product.image.path):
+                # self.product.image.delete()  # Delete the image file
+                os.remove(self.product.image.path)
+
+    def test_upload_product_image(self):
+        """Test uploading an image to a product"""
+        url = image_upload_url(self.product.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as temp_image:
+            image = Image.new('RGB', (100, 100))
+            image.save(temp_image, format='JPEG')
+            temp_image.seek(0)
+            response = self.client.post(
+                url, {'image': temp_image}, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.product.refresh_from_db()
+        self.assertIn('image', response.data)
+        self.assertTrue(os.path.exists(self.product.image.path))
+
+    def test_upload_product_image_invalid(self):
+        """Test uploading an invalid image"""
+        url = image_upload_url(self.product.id)
+        response = self.client.post(
+            url, {'image': 'notanimage'}, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
