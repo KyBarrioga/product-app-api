@@ -1,13 +1,14 @@
 """
 Docstring for app.user.tests.test_tags_api
 """
+from decimal import Decimal
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
 
-from core.models import Tag
+from core.models import Tag, Product
 from product.serializers import TagSerializer
 
 TAGS_URL = reverse('product:tags-list')
@@ -129,3 +130,49 @@ class PrivateTagsAPITests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Tag.objects.filter(id=tag.id).exists())
+
+    def test_filter_tags_assigned_to_products(self):
+        """
+        Test filtering tags by those assigned to products.
+        """
+        tag1 = Tag.objects.create(user=self.user, name='Vegan')
+        tag2 = Tag.objects.create(user=self.user, name='Dessert')
+        product = Product.objects.create(
+            name='Product 1',
+            description='Sample Description',
+            price=Decimal('19.99'),
+            user=self.user
+        )
+        product.tags.add(tag1)
+
+        response = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        serializer1 = TagSerializer(tag1)
+        serializer2 = TagSerializer(tag2)
+        self.assertIn(serializer1.data, response.data)
+        self.assertNotIn(serializer2.data, response.data)
+
+    def test_filtered_tags_unique(self):
+        """
+        Test that filtered tags returns a unique list.
+        """
+        tag = Tag.objects.create(user=self.user, name='Vegan')
+        Tag.objects.create(user=self.user, name='Dessert')
+        product1 = Product.objects.create(
+            name='Product 1',
+            description='Sample Description',
+            price=Decimal('19.99'),
+            user=self.user
+        )
+        product2 = Product.objects.create(
+            name='Product 2',
+            description='Sample Description',
+            price=Decimal('19.99'),
+            user=self.user
+        )
+        product1.tags.add(tag)
+        product2.tags.add(tag)
+
+        response = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(response.data), 1)
