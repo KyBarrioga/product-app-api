@@ -30,7 +30,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'description',
-                  'user', 'price', 'tags', 'ingredients']
+                  'user', 'price', 'tags', 'ingredients', 'image']
         read_only_fields = ['id', 'user']
 
     def validate(self, attrs):
@@ -104,7 +104,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(ProductSerializer):
     class Meta(ProductSerializer.Meta):
         model = Product
-        fields = ProductSerializer.Meta.fields + ['description']
+        fields = ProductSerializer.Meta.fields + ['description', 'image']
         read_only_fields = ProductSerializer.Meta.read_only_fields + \
             ['id', 'user']
 

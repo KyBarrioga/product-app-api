@@ -1,13 +1,14 @@
 """
 Docstring for app.user.tests.test_ingredients_api
 """
+from decimal import Decimal
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
 
-from core.models import Ingredients
+from core.models import Ingredients, Product
 from product.serializers import IngredientsSerializer
 
 INGREDIENTS_URL = reverse('product:ingredients-list')
@@ -110,3 +111,49 @@ class PrivateIngredientsAPITests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Ingredients.objects.filter(id=ingredient.id).exists())
+
+    def test_filter_ingredients_assigned_to_products(self):
+        """Test listing ingredients to those assigned to products."""
+        ingredient1 = Ingredients.objects.create(
+            user=self.user, name='Ingredient 7')
+        ingredient2 = Ingredients.objects.create(
+            user=self.user, name='Ingredient 8')
+        product = Product.objects.create(
+            name='Product 1',
+            description='Sample Description',
+            price=Decimal('19.99'),
+            user=self.user,
+        )
+        product.ingredients.add(ingredient1)
+
+        response = self.client.get(INGREDIENTS_URL, {'assigned_only': 1})
+
+        serializer1 = IngredientsSerializer(ingredient1)
+        serializer2 = IngredientsSerializer(ingredient2)
+        self.assertIn(serializer1.data, response.data)
+        self.assertNotIn(serializer2.data, response.data)
+
+    def test_filtered_ingredients_unique(self):
+        """Test filtered ingredients returns a unique list."""
+        ingredient = Ingredients.objects.create(
+            user=self.user, name='Ingredient 9')
+        Ingredients.objects.create(user=self.user, name='Ingredient 10')
+        product1 = Product.objects.create(
+            name='Sample Product',
+            description='Sample Description',
+            price=Decimal('19.99'),
+            user=self.user,
+        )
+        product2 = Product.objects.create(
+            name='Sample Product 2',
+            description='Sample Description 2',
+            price=Decimal('29.99'),
+            user=self.user,
+        )
+
+        product1.ingredients.add(ingredient)
+        product2.ingredients.add(ingredient)
+
+        response = self.client.get(INGREDIENTS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(response.data), 1)
