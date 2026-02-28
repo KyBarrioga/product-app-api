@@ -12,7 +12,7 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app
-      - dev_static_data:/vol/web
+      - dev-static-data:/vol/web
     command: >
       sh -c "python manage.py wait_db_buffer &&
             python manage.py migrate &&
@@ -29,7 +29,7 @@ services:
   db:
     image: postgres:13-alpine
     volumes:
-      - dev_db_data:/var/lib/postgresql/data
+      - dev-db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=dev_user
       - POSTGRES_PASSWORD=change_me
@@ -39,5 +39,5 @@ services:
       - "5433:5432" # use 5433 on host to avoid conflicts - as of writing, we have psql in windows and docker
 
 volumes:
-  dev_db_data:
-  dev_static_data:
+  dev-db-data:
+  dev-static-data:
