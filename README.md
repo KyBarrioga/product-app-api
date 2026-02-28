@@ -1,5 +1,5 @@
 # recipe-app-api
-Recipe API - A Standard Django API Template
+Product App API - A Standard Django API Template
 
 # Test
 docker-compose run --rm app -sh c "Python manage.py tests"
