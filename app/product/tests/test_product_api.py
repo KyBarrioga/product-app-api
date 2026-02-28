@@ -395,6 +395,48 @@ class PrivateProductAPITestCase(TestCase):
             product.ingredients.filter(name='Ingredient to Clear').exists()
         )
 
+    def test_filter_by_tags(self):
+        """Test filtering products by tags"""
+        product1 = create_product(user=self.user, name='Product 1')
+        product2 = create_product(user=self.user, name='Product 2')
+        tag1 = Tag.objects.create(user=self.user, name='Tag1')
+        tag2 = Tag.objects.create(user=self.user, name='Tag2')
+        product1.tags.add(tag1)
+        product2.tags.add(tag2)
+        product3 = create_product(user=self.user, name='Product 3')
+
+        response = self.client.get(
+            PRODUCT_URL, {'tags': f'{tag1.id},{tag2.id}'})
+        serializer1 = ProductSerializer(product1)
+        serializer2 = ProductSerializer(product2)
+        serializer3 = ProductSerializer(product3)
+
+        self.assertIn(serializer1.data, response.data)
+        self.assertIn(serializer2.data, response.data)
+        self.assertNotIn(serializer3.data, response.data)
+
+    def test_filter_by_ingredients(self):
+        """Test filtering products by ingredients"""
+        product1 = create_product(user=self.user, name='Product 1')
+        product2 = create_product(user=self.user, name='Product 2')
+        ingredient1 = Ingredients.objects.create(
+            user=self.user, name='Ingredient1')
+        ingredient2 = Ingredients.objects.create(
+            user=self.user, name='Ingredient2')
+        product1.ingredients.add(ingredient1)
+        product2.ingredients.add(ingredient2)
+        product3 = create_product(user=self.user, name='Product 3')
+
+        response = self.client.get(
+            PRODUCT_URL, {'ingredients': f'{ingredient1.id},{ingredient2.id}'})
+        serializer1 = ProductSerializer(product1)
+        serializer2 = ProductSerializer(product2)
+        serializer3 = ProductSerializer(product3)
+
+        self.assertIn(serializer1.data, response.data)
+        self.assertIn(serializer2.data, response.data)
+        self.assertNotIn(serializer3.data, response.data)
+
 
 class ProductImageUploadTests(TestCase):
     """Test cases for uploading product images"""
