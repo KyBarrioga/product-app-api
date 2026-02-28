@@ -1,10 +1,10 @@
 # Product App API
 
-A professional-grade Django REST API template for managing products with a robust, scalable architecture. This project includes user authentication, product management, and a clean API structure following Django best practices.
+A Django REST API template for managing products with a robust, scalable architecture. This project includes user authentication, product management, and a clean API structure following Django best practices and can be used for any future Django projects.
 
 ## Overview
 
-This application provides a complete backend API solution for product management built with Django and Django REST Framework. It features a containerized setup using Docker and Docker Compose for easy development and deployment.
+This application provides a complete backend API solution for product management built with Django and Django REST Framework. It features a containerized setup using Docker and Docker Compose for easy development and deployment. Built for personal use for any future Django projects.
 
 ## Prerequisites
 
