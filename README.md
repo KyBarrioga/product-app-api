@@ -90,3 +90,6 @@ The application provides RESTful API endpoints for:
 - Ingredients management
 
 Access the browsable API at `http://127.0.0.1:8000/api/docs/#/`
+
+TODO:
+Deploy to AWS
