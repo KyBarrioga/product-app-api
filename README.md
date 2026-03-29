@@ -92,6 +92,5 @@ The application provides RESTful API endpoints for:
 Access the browsable API at `http://127.0.0.1:8000/api/docs/#/`
 
 TODO:
-- Deploy to AWS
 - Upgrade dependencies to latest library versions
 - Clear out deprecated commands / functions
